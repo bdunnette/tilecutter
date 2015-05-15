@@ -1,9 +1,20 @@
 var fs = require('fs');
 var Hapi = require('hapi');
 var Good = require('good');
+var levelup = require('level');
+var Jobs = require('level-jobs');
 
 var server = new Hapi.Server();
 server.connection({ port: 3000 });
+
+var db = levelup('.jobs');
+
+function worker(payload, cb) {
+  server.log('info', "Processing file:" + payload.filename);
+}
+
+var maxConcurrency = 2;
+var queue = Jobs(db, worker, maxConcurrency);
 
 server.route({
     method: 'POST',
@@ -34,7 +45,13 @@ server.route({
                         filename: data.file.hapi.filename,
                         headers: data.file.hapi.headers
                     }
-                    reply(JSON.stringify(ret));
+		    var payload = {filename: data.file.hapi.filename};
+
+		    var jobId = queue.push(payload, function(err) {
+		      if (err) console.error('Error pushing work into the queue', err.stack);
+		    });
+                    
+		    reply(JSON.stringify(ret));
                 })
             }
  
