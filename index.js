@@ -1,6 +1,7 @@
 var fs = require('fs');
 var Hapi = require('hapi');
 var Good = require('good');
+var sharp = require('sharp');
 var levelup = require('level');
 var Jobs = require('level-jobs');
 
@@ -11,6 +12,10 @@ var db = levelup('.jobs');
 
 function worker(payload, cb) {
   server.log('info', "Processing file:" + payload.filename);
+  sharp(__dirname + "/uploads/" + payload.filename).metadata(function(err, metadata) {
+    console.log(err);
+    console.log(metadata);
+  });
 }
 
 var maxConcurrency = 2;
@@ -34,13 +39,13 @@ server.route({
                 var path = __dirname + "/uploads/" + name;
                 var file = fs.createWriteStream(path);
  
-                file.on('error', function (err) { 
-                    console.error(err) 
+                file.on('error', function (err) {
+                    console.error(err)
                 });
  
                 data.file.pipe(file);
  
-                data.file.on('end', function (err) { 
+                data.file.on('end', function (err) {
                     var ret = {
                         filename: data.file.hapi.filename,
                         headers: data.file.hapi.headers
