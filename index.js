@@ -6,7 +6,7 @@ var levelup = require('level');
 var Jobs = require('level-jobs');
 
 var server = new Hapi.Server();
-server.connection({ port: 3000 });
+server.connection({ port: 3030 });
 
 var db = levelup('.jobs');
 
@@ -27,6 +27,7 @@ server.route({
     config: {
  
         payload: {
+	    maxBytes:209715200,
             output: 'stream',
             parse: true,
             allow: 'multipart/form-data'
