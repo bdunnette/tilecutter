@@ -27,8 +27,8 @@ server.route({
     method: 'POST',
     path: '/submit',
     config: {
-	validate: { 
-          payload: { 
+	validate: {
+          payload: {
             file: Joi.object().required()
     	}},
         payload: {
@@ -37,7 +37,7 @@ server.route({
             parse: true,
             allow: 'multipart/form-data'
         },
- 
+
         handler: function (request, reply) {
             var data = request.payload;
             if (data.file) {
@@ -46,13 +46,13 @@ server.route({
 		console.log(__dirname);
                 var filePath = path.join(__dirname, "slides", name);
                 var file = fs.createWriteStream(filePath);
- 
+
                 file.on('error', function (err) {
                     console.error(err)
                 });
- 
+
                 data.file.pipe(file);
- 
+
                 data.file.on('end', function (err) {
                     var ret = {
                         filename: data.file.hapi.filename,
@@ -63,28 +63,12 @@ server.route({
 		    var jobId = queue.push(payload, function(err) {
 		      if (err) console.error('Error pushing work into the queue', err.stack);
 		    });
-                    
+
 		    reply(JSON.stringify(ret));
                 })
             }
- 
+
         }
-    }
-});
-
-server.route({
-    method: 'GET',
-    path: '/',
-    handler: function (request, reply) {
-        reply('Hello, world!');
-    }
-});
-
-server.route({
-    method: 'GET',
-    path: '/{name}',
-    handler: function (request, reply) {
-        reply('Hello, ' + encodeURIComponent(request.params.name) + '!');
     }
 });
 
